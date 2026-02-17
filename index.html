@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>اختبار نافس المحاكي - الثالث المتوسط</title>
+    <style>
+        :root {
+            --primary-color: #1a5f7a; /* لون أزرق رسمي أكثر وقاراً للمتوسط */
+            --secondary-color: #f2f7f9;
+            --alert-color: #c0392b;
+            --text-color: #2c3e50;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f5;
+            margin: 0;
+            padding: 20px;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-top: 6px solid var(--primary-color);
+        }
+        
+        /* Header */
+        .header-section {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 25px;
+            margin-bottom: 30px;
+        }
+        .header-title {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 1.8em;
+            margin-bottom: 30px;
+        }
+        .student-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        /* Timer */
+        .timer-container {
+            position: sticky;
+            top: 15px;
+            background: var(--alert-color);
+            color: white;
+            padding: 8px 25px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 30px;
+            margin: 0 auto 30px auto;
+            width: fit-content;
+            box-shadow: 0 4px 10px rgba(192, 57, 43, 0.3);
+            z-index: 1000;
+        }
+
+        /* Questions */
+        .section-title {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+        .question-card {
+            background: #fff;
+            border: 1px solid #e1e1e1;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+        .question-card:hover {
+            border-color: var(--primary-color);
+        }
+        .question-text {
+            font-weight: 700;
+            font-size: 1.05em;
+            margin-bottom: 15px;
+        }
+        .options-list {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* خيارين في كل صف للمتوسط */
+            gap: 10px;
+        }
+        .options-list li label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .options-list li input {
+            margin-left: 10px;
+        }
+
+        /* Passage */
+        .passage-box {
+            background: #fffbf0;
+            padding: 25px;
+            border-radius: 8px;
+            line-height: 1.9;
+            margin-bottom: 25px;
+            border: 1px solid #e0d4b0;
+            text-align: justify;
+            font-size: 1.05em;
+            max-height: 400px;
+            overflow-y: auto; /* شريط تمرير للنص الطويل */
+        }
+
+        /* Result */
+        .result-box {
+            display: none;
+            text-align: center;
+            margin-top: 40px;
+            padding: 40px;
+            border: 2px dashed var(--primary-color);
+            border-radius: 15px;
+            background-color: #fafffc;
+        }
+        .result-score {
+            font-size: 3em;
+            color: var(--primary-color);
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            font-size: 1.1em;
+            border-radius: 6px;
+            cursor: pointer;
+            display: block;
+            margin: 40px auto;
+            transition: background 0.3s;
+        }
+        .btn:hover { background-color: #124357; }
+
+        @media print {
+            .timer-container, .btn, .no-print { display: none !important; }
+            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
+            .passage-box { max-height: none; overflow: visible; border: 1px solid #ccc; }
+            .result-box { display: block !important; border: 2px solid #000; }
+            body { background: white; font-size: 12pt; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="timer" class="timer-container">الوقت المتبقي: 35:00</div>
+
+    <div class="header-section">
+        <h1 class="header-title">اختبار نافس (المرحلة المتوسطة)</h1>
+        <div class="student-info-grid">
+            <div class="input-group">
+                <label>اسم الطالب الرباعي:</label>
+                <input type="text" id="studentName">
+            </div>
+            <div class="input-group">
+                <label>السجل المدني:</label>
+                <input type="number" id="civilId">
+            </div>
+            <div class="input-group">
+                <label>اسم المدرسة:</label>
+                <input type="text" id="schoolName">
+            </div>
+            <div class="input-group">
+                <label>الصف الدراسي:</label>
+                <select id="classSection">
+                    <option value="">اختر الصف</option>
+                    <option value="1">ثالث متوسط - 1</option>
+                    <option value="2">ثالث متوسط - 2</option>
+                    <option value="3">ثالث متوسط - 3</option>
+                    <option value="4">ثالث متوسط - 4</option>
+                    <option value="5">ثالث متوسط - 5</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <form id="quizForm">
+        <h2 class="section-title">أولاً: القراءة والفهم (اللغة العربية)</h2>
+        <div class="passage-box">
+            <h3 style="text-align: center; margin-top: 0;">الذكاء الاصطناعي: آفاق المستقبل وتحدياته</h3>
+            <p>
+                يشهد العالم اليوم ثورة تكنولوجية غير مسبوقة تتمثل في التطور المتسارع لتقنيات الذكاء الاصطناعي، الذي لم يعد مجرد خيال علمي نراه في الأفلام، بل أصبح واقعاً ملموساً يتغلغل في كافة تفاصيل حياتنا اليومية. يُعرّف الذكاء الاصطناعي بأنه قدرة الآلات والأنظمة الحاسوبية على محاكاة العمليات الذكاء البشري، مثل التعلم والاستنتاج وحل المشكلات المعقدة. وتعتمد هذه الأنظمة على خوارزميات متطورة وقواعد بيانات ضخمة تتيح لها تحسين أدائها ذاتياً مع مرور الوقت.
+            </p>
+            <p>
+                تتجلى تطبيقات الذكاء الاصطناعي في مجالات شتى؛ ففي الطب، تساهم هذه التقنيات في تشخيص الأمراض بدقة تفوق أحياناً قدرة الأطباء البشر، وتساعد في تطوير عقاقير جديدة في وقت قياسي. وفي قطاع المواصلات، تقترب السيارات ذاتية القيادة من أن تصبح وسيلة النقل الأساسية، مما يبشر بتقليل الحوادث المرورية الناتجة عن الأخطاء البشرية. أما في التعليم، فتتيح أنظمة التعلم الذكي تخصيص المناهج الدراسية لتناسب قدرات كل طالب على حدة، مما يرفع من كفاءة العملية التعليمية.
+            </p>
+            <p>
+                ورغم هذه الفوائد الجمة، يثير الذكاء الاصطناعي مخاوف وتحديات أخلاقية واقتصادية كبيرة. لعل أبرز هذه المخاوف هو تأثير الأتمتة على سوق العمل، حيث تتوقع الدراسات اختفاء ملايين الوظائف التقليدية التي تعتمد على التكرار، مما يستدعي إعادة تأهيل القوى العاملة لاكتساب مهارات جديدة تواكب هذا التغيير. وهناك أيضاً معضلة "التحيز الخوارزمي"، حيث يمكن للأنظمة الذكية أن ترث التحيزات العنصرية أو الجندرية الموجودة في البيانات التي تدربت عليها، مما يؤدي إلى قرارات غير عادلة في مجالات مثل التوظيف أو القضاء.
+            </p>
+            <p>
+                علاوة على ذلك، تبرز قضية الخصوصية كأحد أهم التحديات، إذ تتطلب أنظمة الذكاء الاصطناعي جمع كميات هائلة من البيانات الشخصية للمستخدمين لتعمل بكفاءة، مما يضع بيانات الأفراد في دائرة الخطر إذا لم يتم حمايتها بقوانين صارمة. كما يخشى البعض من وصول الذكاء الاصطناعي إلى مرحلة "الذكاء الخارق" الذي قد يتجاوز سيطرة البشر، وهو سيناريو يحذر منه بعض العلماء والمفكرين.
+            </p>
+            <p>
+                في الختام، لا يمكننا إنكار أن الذكاء الاصطناعي هو سيف ذو حدين. إن المستقبل لا يكمن في رفض هذه التكنولوجيا أو الخوف منها، بل في كيفية توجيهها لخدمة البشرية. يتطلب ذلك تعاوناً دولياً لوضع تشريعات أخلاقية وقانونية تضمن تطوير ذكاء اصطناعي "مسؤول" و"آمن"، يعزز من رفاهية الإنسان ولا يهدد وجوده أو كرامته. إننا نقف اليوم على أعتاب عصر جديد، وعلينا أن نكون مستعدين لقيادته بحكمة.
+            </p>
+        </div>
+        <div id="reading-questions"></div>
+
+        <h2 class="section-title">ثانياً: الرياضيات</h2>
+        <div id="math-questions"></div>
+
+        <h2 class="section-title">ثالثاً: العلوم</h2>
+        <div id="science-questions"></div>
+
+        <button type="button" class="btn" onclick="submitExam()">تسليم الاختبار</button>
+    </form>
+
+    <div id="resultArea" class="result-box">
+        <h2>نتيجة الاختبار التجريبي</h2>
+        <p><strong>الطالب:</strong> <span id="resName"></span> | <strong>الصف:</strong> ثالث متوسط</p>
+        <div class="result-score"><span id="scoreVal">0</span> / 30</div>
+        <p>النسبة المئوية: <span id="percentageVal">0</span>%</p>
+        
+        <div style="margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px;">
+            <p>شكراً لمشاركتك وحرصك واهتمامك</p>
+            <p><strong>مع تحيات لجنة التميز بالمدرسة</strong></p>
+        </div>
+        <button class="btn no-print" onclick="window.print()">تصدير النتيجة (PDF)</button>
+    </div>
+</div>
+
+<script>
+    const questions = {
+        reading: [
+            { q: "الفكرة المحورية التي يدور حولها النص هي:", options: ["تاريخ الحاسب الآلي", "الذكاء الاصطناعي: فوائده ومخاطره", "صناعة السيارات الحديثة", "تطور الطب البشري"], a: 1 },
+            { q: "وفقاً للنص، كيف يساهم الذكاء الاصطناعي في التعليم؟", options: ["إلغاء المدارس", "تخصيص المناهج لتناسب قدرات الطالب", "استبدال المعلمين بالروبوتات", "زيادة صعوبة الاختبارات"], a: 1 },
+            { q: "المقصود بمصطلح 'التحيز الخوارزمي' الوارد في النص:", options: ["تعطل الأنظمة الحاسوبية", "سرعة الخوارزميات في العمل", "اتخاذ قرارات غير عادلة بناءً على بيانات متحيزة", "تفضيل الروبوتات على البشر"], a: 2 },
+            { q: "أي مما يلي يُعد من التحديات الاقتصادية للذكاء الاصطناعي؟", options: ["تشخيص الأمراض", "اختفاء الوظائف التقليدية", "السيارات ذاتية القيادة", "تطور الأدوية"], a: 1 },
+            { q: "مرادف كلمة 'تتجلى' في عبارة 'تتجلى تطبيقات الذكاء الاصطناعي':", options: ["تختفي", "تتضح وتظهر", "تتعقد", "تتناقص"], a: 1 },
+            { q: "موقف الكاتب من الذكاء الاصطناعي في الختام هو:", options: ["رفض التكنولوجيا تماماً", "الدعوة لإيقاف التطور", "التوجيه الحكيم والتقنين الأخلاقي", "الخوف والاستسلام"], a: 2 },
+            { q: "العلاقة بين 'جمع البيانات الضخمة' و 'مخاطر الخصوصية' هي علاقة:", options: ["سببية", "تضاد", "ترادف", "لا توجد علاقة"], a: 0 },
+            { q: "الضمير في كلمة 'أدائها' في الفقرة الأولى يعود على:", options: ["العمليات", "المشكلات", "الأنظمة الحاسوبية", "البيانات"], a: 2 },
+            { q: "أي العبارات التالية تعتبر 'حقيقة' وليست 'رأياً' وفق النص؟", options: ["السيارات ذاتية القيادة مخيفة", "الذكاء الاصطناعي يعتمد على الخوارزميات والبيانات", "الذكاء الخارق سيدمر البشرية حتماً", "التعليم الذكي هو الحل الوحيد"], a: 1 },
+            { q: "العنوان الأنسب للفقرة الثالثة هو:", options: ["تعريف الذكاء الاصطناعي", "تطبيقات الذكاء الاصطناعي", "المخاوف والتحديات", "المستقبل المشرق"], a: 2 }
+        ],
+        math: [
+            { q: "حل المعادلة: 2س - 5 = 11 هو:", options: ["س = 3", "س = 8", "س = 6", "س = 16"], a: 1 },
+            { q: "ميل المستقيم الذي يمر بالنقطتين (1، 2) و (3، 6) يساوي:", options: ["1", "2", "3", "4"], a: 1 },
+            { q: "تحليل كثيرة الحدود: س² - 9 هو:", options: ["(س-3)(س-3)", "(س+3)(س+3)", "(س-3)(س+3)", "(س-9)(س+1)"], a: 2 },
+            { q: "حجم أسطوانة نصف قطر قاعدتها 2 سم وارتفاعها 5 سم (باعتبار ط ≈ 3.14):", options: ["31.4 سم³", "62.8 سم³", "20 سم³", "10 سم³"], a: 1 },
+            { q: "إذا كان احتمال سقوط المطر 30%، فإن احتمال عدم سقوطه هو:", options: ["30%", "50%", "70%", "100%"], a: 2 },
+            { q: "قيمة العبارة (3 + 4)² - 9 تساوي:", options: ["40", "25", "13", "49"], a: 0 },
+            { q: "حل المتباينة: س + 3 > 7 هو:", options: ["س > 4", "س < 4", "س > 10", "س = 4"], a: 0 },
+            { q: "المسافة بين النقطتين (0، 0) و (3، 4) تساوي:", options: ["3", "4", "5", "7"], a: 2 },
+            { q: "الوسط الحسابي للأعداد: 2، 4، 6، 8، 10 هو:", options: ["5", "6", "7", "8"], a: 1 },
+            { q: "أي المعادلات التالية تمثل دالة خطية؟", options: ["ص = س²", "ص = 2س + 1", "ص = 1/س", "ص = |س|"], a: 1 }
+        ],
+        science: [
+            { q: "الجسيمات التي تدور حول نواة الذرة وتحمل شحنة سالبة هي:", options: ["البروتونات", "النيوترونات", "الإلكترونات", "الكواركات"], a: 2 },
+            { q: "الرابطة الكيميائية التي تنشأ عن مشاركة الإلكترونات تسمى:", options: ["رابطة أيونية", "رابطة تساهمية", "رابطة فلزية", "رابطة هيدروجينية"], a: 1 },
+            { q: "وحدة قياس القوة هي:", options: ["الجول", "النيوتن", "الواط", "الباسكال"], a: 1 },
+            { q: "أي مما يلي يمثل سرعة متجهة؟", options: ["50 كم/ساعة", "50 كم/ساعة شمالاً", "50 كم", "50 ساعة"], a: 1 },
+            { q: "تسمى العناصر في المجموعة 18 في الجدول الدوري بـ:", options: ["القلويات", "الهالوجينات", "الغازات النبيلة", "الفلزات الانتقالية"], a: 2 },
+            { q: "الجزء المسؤول عن نقل الصفات الوراثية في الخلية هو:", options: ["السيتوبلازم", "الجدار الخلوي", "الكروموسومات (DNA)", "الميتوكوندريا"], a: 2 },
+            { q: "التفاعل الذي يطلق طاقة حرارية يسمى:", options: ["ماص للحرارة", "طارد للحرارة", "متعادل", "فيزيائي"], a: 1 },
+            { q: "القانون القائل 'لكل فعل رد فعل مساوٍ له في المقدار ومعاكس له في الاتجاه' هو:", options: ["قانون نيوتن الأول", "قانون نيوتن الثاني", "قانون نيوتن الثالث", "قانون الجاذبية"], a: 2 },
+            { q: "العدد الذري للعنصر يساوي عدد:", options: ["النيوترونات", "البروتونات", "مستويات الطاقة", "النظائر"], a: 1 },
+            { q: "تعتبر الشمس مصدراً للطاقة:", options: ["الكيميائية", "النووية", "الحركية", "الكهربائية"], a: 1 }
+        ]
+    };
+
+    function renderSection(sectionId, data, startIndex) {
+        const container = document.getElementById(sectionId);
+        data.forEach((item, index) => {
+            let optionsHtml = '';
+            item.options.forEach((opt, optIndex) => {
+                optionsHtml += `
+                    <li>
+                        <label>
+                            <input type="radio" name="q${startIndex + index}" value="${optIndex}">
+                            <span>${opt}</span>
+                        </label>
+                    </li>`;
+            });
+
+            container.innerHTML += `
+                <div class="question-card">
+                    <div class="question-text">${index + 1}. ${item.q}</div>
+                    <ul class="options-list">${optionsHtml}</ul>
+                </div>`;
+        });
+    }
+
+    renderSection('reading-questions', questions.reading, 0);
+    renderSection('math-questions', questions.math, 10);
+    renderSection('science-questions', questions.science, 20);
+
+    // Timer (35 Minutes)
+    let timeLeft = 35 * 60;
+    const timerElement = document.getElementById('timer');
+    
+    const timerInterval = setInterval(() => {
+        const minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+        
+        timerElement.textContent = `الوقت المتبقي: ${minutes}:${seconds}`;
+        
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            submitExam(true);
+        }
+        timeLeft--;
+    }, 1000);
+
+    function submitExam(autoSubmit = false) {
+        if (!autoSubmit && !confirm('هل أنت متأكد من إنهاء الاختبار وتسليمه؟')) return;
+        
+        clearInterval(timerInterval);
+        
+        const name = document.getElementById('studentName').value;
+        if(!name && !autoSubmit) { alert('الرجاء كتابة اسم الطالب'); return; }
+
+        let score = 0;
+        
+        // Calculate Score
+        const allQuestions = [...questions.reading, ...questions.math, ...questions.science];
+        allQuestions.forEach((q, i) => {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            if (selected && parseInt(selected.value) === q.a) score++;
+        });
+
+        // Show Results
+        document.getElementById('quizForm').style.display = 'none';
+        document.getElementById('timer').style.display = 'none';
+        document.getElementById('resultArea').style.display = 'block';
+        
+        document.getElementById('resName').textContent = name || 'الطالب';
+        document.getElementById('scoreVal').textContent = score;
+        document.getElementById('percentageVal').textContent = ((score / 30) * 100).toFixed(1);
+        
+        window.scrollTo(0, 0);
+    }
+</script>
+
+</body>
+</html>
